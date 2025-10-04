@@ -1,0 +1,84 @@
+services:
+  langgraph-translator:
+    build:
+      context: ./agents/langgraph-translator
+      dockerfile: Dockerfile
+    container_name: langgraph-translator
+    ports:
+      - "8080:8080"
+    environment:
+      - AGENT_NAME=langgraph-translator
+      - CONFIG_PATH=/app/agents_config.yaml
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    networks:
+      - agent-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  crewai-weather:
+    build:
+      context: ./agents/crewai-weather
+      dockerfile: Dockerfile
+    container_name: crewai-weather
+    ports:
+      - "8081:8081"
+    environment:
+      - AGENT_NAME=crewai-weather
+      - CONFIG_PATH=/app/agents_config.yaml
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    networks:
+      - agent-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  adk-wikipedia:
+    build:
+      context: ./agents/adk-wikipedia
+      dockerfile: Dockerfile
+    container_name: adk-wikipedia
+    ports:
+      - "8082:8082"
+    environment:
+      - AGENT_NAME=adk-wikipedia
+      - CONFIG_PATH=/app/agents_config.yaml
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+    networks:
+      - agent-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8082/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  simple-extractor:
+    build:
+      context: ./agents/simple-extractor
+      dockerfile: Dockerfile
+    container_name: simple-extractor
+    ports:
+      - "8083:8083"
+    environment:
+      - AGENT_NAME=simple-extractor
+      - CONFIG_PATH=/app/agents_config.yaml
+      - OPENAI_API_KEY_EXTRACTOR=${OPENAI_API_KEY_EXTRACTOR:-${OPENAI_API_KEY}}
+    networks:
+      - agent-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+networks:
+  agent-network:
+    driver: bridge

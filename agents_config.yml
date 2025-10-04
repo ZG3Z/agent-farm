@@ -1,0 +1,67 @@
+agents:
+  langgraph-translator:
+    provider: gemini
+    model: gemini-2.0-flash-exp
+    api_key_env: GOOGLE_API_KEY
+    temperature: 0.3
+    port: 8080
+    endpoint: http://localhost:8080
+    
+  crewai-weather:
+    provider: gemini
+    model: gemini-2.0-flash-exp
+    api_key_env: GOOGLE_API_KEY
+    temperature: 0.7
+    port: 8081
+    endpoint: http://localhost:8081
+    
+  adk-wikipedia:
+    provider: gemini
+    model: gemini-2.0-flash-exp
+    api_key_env: GOOGLE_API_KEY
+    temperature: 0.5
+    port: 8082
+    endpoint: http://localhost:8082
+    
+  simple-extractor:
+    provider: gemini
+    model: gemini-2.0-flash-exp
+    api_key_env: GOOGLE_API_KEY
+    temperature: 0.3
+    port: 8083
+    endpoint: http://localhost:8083
+
+
+
+# agents:
+#   langgraph-translator:
+#     provider: openai
+#     model: gpt-4o-mini
+#     api_key_env: OPENAI_API_KEY_TRANSLATOR
+#     temperature: 0.3
+#     port: 8080
+#     endpoint: http://localhost:8080
+    
+#   crewai-weather:
+#     provider: anthropic
+#     model: claude-3-5-haiku-20241022
+#     api_key_env: ANTHROPIC_API_KEY_WEATHER
+#     temperature: 0.7
+#     port: 8081
+#     endpoint: http://localhost:8081
+    
+#   adk-wikipedia:
+#     provider: gemini
+#     model: gemini-2.0-flash-exp
+#     api_key_env: GOOGLE_API_KEY_WIKI
+#     temperature: 0.5
+#     port: 8082
+#     endpoint: http://localhost:8082
+    
+#   simple-extractor:
+#     provider: openai
+#     model: gpt-4o-mini
+#     api_key_env: OPENAI_API_KEY_EXTRACTOR
+#     temperature: 0.3
+#     port: 8083
+#     endpoint: http://localhost:8083
