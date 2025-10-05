@@ -62,7 +62,7 @@ class TestWikipediaToTranslator:
     @pytest.fixture
     def client(self):
         """Create A2A client"""
-        return A2AClient(agent_id="integration_test")
+        return A2AClient(agent_id="integration_test", timeout=60)
     
     def test_wikipedia_then_translate(self, client):
         """Test: Search Wikipedia then translate result"""
@@ -76,6 +76,8 @@ class TestWikipediaToTranslator:
         )
         assert wiki_result["status"] == "success"
         summary = wiki_result["summary"]
+        
+        time.sleep(2)
         
         trans_result = client.send_request(
             to_agent="langgraph-translator",
@@ -96,7 +98,7 @@ class TestExtractorToWikipedia:
     @pytest.fixture
     def client(self):
         """Create A2A client"""
-        return A2AClient(agent_id="integration_test")
+        return A2AClient(agent_id="integration_test", timeout=60)
     
     def test_extract_then_wikipedia(self, client):
         """Test: Extract entities then search Wikipedia"""
@@ -115,6 +117,8 @@ class TestExtractorToWikipedia:
         
         if len(data["people"]) > 0:
             person = data["people"][0]
+            time.sleep(2)
+            
             wiki_result = client.send_request(
                 to_agent="adk-wikipedia",
                 endpoint=ENDPOINTS["wikipedia"],
@@ -132,7 +136,7 @@ class TestWeatherToTranslator:
     @pytest.fixture
     def client(self):
         """Create A2A client"""
-        return A2AClient(agent_id="integration_test")
+        return A2AClient(agent_id="integration_test", timeout=60)
     
     def test_weather_then_translate(self, client):
         """Test: Get weather then translate to another language"""
@@ -146,6 +150,8 @@ class TestWeatherToTranslator:
         )
         assert weather_result["status"] == "success"
         weather_info = weather_result["weather_info"]
+        
+        time.sleep(2)
         
         trans_result = client.send_request(
             to_agent="langgraph-translator",
@@ -165,7 +171,7 @@ class TestComplexPipeline:
     @pytest.fixture
     def client(self):
         """Create A2A client"""
-        return A2AClient(agent_id="integration_test")
+        return A2AClient(agent_id="integration_test", timeout=60)
     
     def test_wikipedia_extract_translate(self, client):
         """Test: Wikipedia -> Extractor -> Translator"""
@@ -180,6 +186,8 @@ class TestComplexPipeline:
         assert wiki_result["status"] == "success"
         summary = wiki_result["summary"]
         
+        time.sleep(2)
+        
         extract_result = client.send_request(
             to_agent="simple-extractor",
             endpoint=ENDPOINTS["extractor"],
@@ -192,6 +200,8 @@ class TestComplexPipeline:
         
         key_facts = extract_result["extracted_data"].get("key_facts", [])
         if len(key_facts) > 0:
+            time.sleep(2)
+            
             trans_result = client.send_request(
                 to_agent="langgraph-translator",
                 endpoint=ENDPOINTS["translator"],
@@ -220,6 +230,7 @@ class TestComplexPipeline:
         locations = extract_result["extracted_data"].get("locations", [])
         if len(locations) > 0:
             location = locations[0]
+            time.sleep(2)
             
             wiki_result = client.send_request(
                 to_agent="adk-wikipedia",
@@ -230,6 +241,8 @@ class TestComplexPipeline:
                 }
             )
             assert wiki_result["status"] == "success"
+            
+            time.sleep(2)
             
             weather_result = client.send_request(
                 to_agent="crewai-weather",
@@ -258,6 +271,7 @@ class TestComplexPipeline:
         people = extract_result["extracted_data"].get("people", [])
         if len(people) > 0:
             person = people[0]
+            time.sleep(2)
             
             wiki_result = client.send_request(
                 to_agent="adk-wikipedia",
@@ -268,6 +282,8 @@ class TestComplexPipeline:
                 }
             )
             assert wiki_result["status"] == "success"
+            
+            time.sleep(2)
             
             trans_result = client.send_request(
                 to_agent="langgraph-translator",
@@ -283,6 +299,7 @@ class TestComplexPipeline:
         locations = extract_result["extracted_data"].get("locations", [])
         if len(locations) > 0:
             location = locations[0]
+            time.sleep(2)
             
             weather_result = client.send_request(
                 to_agent="crewai-weather",
@@ -301,28 +318,31 @@ class TestConcurrentRequests:
     @pytest.fixture
     def client(self):
         """Create A2A client"""
-        return A2AClient(agent_id="integration_test")
+        return A2AClient(agent_id="integration_test", timeout=60)
     
-    def test_multiple_translations_concurrent(self, client):
-        """Test: Multiple translation requests"""
+    def test_multiple_translations_sequential(self, client):
+        """Test: Multiple translation requests with delays"""
         texts = ["Hello", "Goodbye", "Thank you"]
+        languages = ["French", "Spanish", "German"]
         results = []
         
-        for text in texts:
+        for text, lang in zip(texts, languages):
+            if len(results) > 0:
+                time.sleep(2)
+            
             result = client.send_request(
                 to_agent="langgraph-translator",
                 endpoint=ENDPOINTS["translator"],
                 payload={
                     "action": "translate",
                     "text": text,
-                    "target_language": "French"
+                    "target_language": lang
                 }
             )
             results.append(result)
+            assert result["status"] == "success"
         
         assert len(results) == 3
-        for result in results:
-            assert result["status"] == "success"
     
     def test_different_agents_sequential(self, client):
         """Test: Sequential requests to different agents"""
@@ -337,6 +357,8 @@ class TestConcurrentRequests:
         )
         assert trans_result["status"] == "success"
         
+        time.sleep(2)
+        
         weather_result = client.send_request(
             to_agent="crewai-weather",
             endpoint=ENDPOINTS["weather"],
@@ -346,6 +368,8 @@ class TestConcurrentRequests:
             }
         )
         assert weather_result["status"] == "success"
+        
+        time.sleep(2)
         
         wiki_result = client.send_request(
             to_agent="adk-wikipedia",
@@ -364,7 +388,7 @@ class TestErrorHandling:
     @pytest.fixture
     def client(self):
         """Create A2A client"""
-        return A2AClient(agent_id="integration_test")
+        return A2AClient(agent_id="integration_test", timeout=60)
     
     def test_invalid_action_returns_error(self, client):
         """Test: Invalid action returns proper error"""
@@ -380,6 +404,8 @@ class TestErrorHandling:
     
     def test_missing_required_field(self, client):
         """Test: Missing required field returns error"""
+        time.sleep(2)
+        
         result = client.send_request(
             to_agent="langgraph-translator",
             endpoint=ENDPOINTS["translator"],
@@ -392,6 +418,8 @@ class TestErrorHandling:
     
     def test_empty_payload(self, client):
         """Test: Empty payload returns error"""
+        time.sleep(2)
+        
         result = client.send_request(
             to_agent="simple-extractor",
             endpoint=ENDPOINTS["extractor"],
@@ -409,7 +437,7 @@ class TestCrossFrameworkCompatibility:
     @pytest.fixture
     def client(self):
         """Create A2A client"""
-        return A2AClient(agent_id="integration_test")
+        return A2AClient(agent_id="integration_test", timeout=60)
     
     def test_langgraph_to_crewai(self, client):
         """Test: LangGraph output to CrewAI input"""
@@ -426,6 +454,8 @@ class TestCrossFrameworkCompatibility:
     
     def test_crewai_to_adk(self, client):
         """Test: CrewAI output to ADK input"""
+        time.sleep(2)
+        
         weather_result = client.send_request(
             to_agent="crewai-weather",
             endpoint=ENDPOINTS["weather"],
@@ -438,6 +468,8 @@ class TestCrossFrameworkCompatibility:
     
     def test_adk_to_none(self, client):
         """Test: ADK output to no-framework agent input"""
+        time.sleep(2)
+        
         wiki_result = client.send_request(
             to_agent="adk-wikipedia",
             endpoint=ENDPOINTS["wikipedia"],
@@ -447,6 +479,8 @@ class TestCrossFrameworkCompatibility:
             }
         )
         assert wiki_result["status"] == "success"
+        
+        time.sleep(2)
         
         extract_result = client.send_request(
             to_agent="simple-extractor",

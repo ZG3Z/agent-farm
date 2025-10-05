@@ -1,7 +1,7 @@
 """
-Data Extractor - extracts structured data from unstructured text.
-Framework: None (raw API)
-Task: Extract entities, dates, numbers, key facts
+Data Extractor Agent
+Framework: None 
+Task: Extract structured data from text
 
 Example:
   Input: "John Smith visited Paris on January 15, 2024 and spent $500."
@@ -10,6 +10,7 @@ Example:
     "locations": ["Paris"],
     "dates": ["January 15, 2024"],
     "amounts": ["$500"]
+    "key_facts": ["John Smith visited Paris on January 15, 2024 and spent $500."]
   }
 """
 import os
@@ -29,7 +30,6 @@ logger = logging.getLogger(__name__)
 
 class DataExtractor:
     def __init__(self):
-        # Load YAML config
         config_path = os.getenv("CONFIG_PATH", "/app/agents_config.yaml")
         with open(config_path) as f:
             config = yaml.safe_load(f)
@@ -53,13 +53,13 @@ class DataExtractor:
     
     def extract(self, text):
         system = """Extract structured information. Return ONLY valid JSON:
-{
-  "people": ["names"],
-  "locations": ["places"],
-  "dates": ["dates"],
-  "amounts": ["money/numbers"],
-  "key_facts": ["facts"]
-}"""
+                    {
+                    "people": ["names"],
+                    "locations": ["places"],
+                    "dates": ["dates"],
+                    "amounts": ["money/numbers"],
+                    "key_facts": ["facts"]
+                    }"""
         
         try:
             if self.provider == "openai":

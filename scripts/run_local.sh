@@ -34,6 +34,11 @@ if [ -z "$GOOGLE_API_KEY" ] && [ -z "$GOOGLE_API_KEY" ]; then
     exit 1
 fi
 
+if [ -z "$OPENWEATHER_API_KEY" ]; then
+    echo "ERROR: OPENWEATHER_API_KEY not"
+    exit 1
+fi
+
 echo ""
 echo "Building Docker images..."
 docker-compose build

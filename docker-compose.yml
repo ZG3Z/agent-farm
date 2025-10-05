@@ -1,8 +1,8 @@
 services:
   langgraph-translator:
     build:
-      context: ./agents/langgraph-translator
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: agents/langgraph-translator/Dockerfile
     container_name: langgraph-translator
     ports:
       - "8080:8080"
@@ -21,8 +21,8 @@ services:
 
   crewai-weather:
     build:
-      context: ./agents/crewai-weather
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: agents/crewai-weather/Dockerfile
     container_name: crewai-weather
     ports:
       - "8081:8081"
@@ -30,6 +30,7 @@ services:
       - AGENT_NAME=crewai-weather
       - CONFIG_PATH=/app/agents_config.yaml
       - GOOGLE_API_KEY=${GOOGLE_API_KEY}
+      - OPENWEATHER_API_KEY=${OPENWEATHER_API_KEY}
     networks:
       - agent-network
     healthcheck:
@@ -41,8 +42,8 @@ services:
 
   adk-wikipedia:
     build:
-      context: ./agents/adk-wikipedia
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: agents/adk-wikipedia/Dockerfile
     container_name: adk-wikipedia
     ports:
       - "8082:8082"
@@ -61,15 +62,15 @@ services:
 
   simple-extractor:
     build:
-      context: ./agents/simple-extractor
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: agents/simple-extractor/Dockerfile
     container_name: simple-extractor
     ports:
       - "8083:8083"
     environment:
       - AGENT_NAME=simple-extractor
       - CONFIG_PATH=/app/agents_config.yaml
-      - OPENAI_API_KEY_EXTRACTOR=${OPENAI_API_KEY_EXTRACTOR:-${OPENAI_API_KEY}}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY}
     networks:
       - agent-network
     healthcheck:

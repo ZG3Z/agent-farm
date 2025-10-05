@@ -1,5 +1,5 @@
 """
-Unit tests for CrewAI Weather agent
+Unit tests for Weather Agent
 """
 import sys
 import time

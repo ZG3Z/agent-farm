@@ -1,4 +1,6 @@
-"""A2A Protocol - Agent to Agent Communication with FastAPI"""
+"""
+A2A Protocol Implementation
+"""
 from dataclasses import dataclass, asdict
 from typing import Any, Dict, Optional, List, Callable
 from enum import Enum
@@ -89,7 +91,7 @@ class A2AServer:
         self._setup_routes()
     
     def _setup_routes(self):
-        """Configure FastAPI routes"""
+        """Configure routes"""
         
         @self.app.get("/health")
         async def health():

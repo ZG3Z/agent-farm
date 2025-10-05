@@ -1,5 +1,5 @@
 """
-Unit tests for Simple Extractor agent
+Unit tests for Extractor Agent
 """
 import sys
 import time

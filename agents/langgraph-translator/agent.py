@@ -1,4 +1,12 @@
-"""LangGraph Translator - reads from agents_config.yaml"""
+"""
+Translator Agent
+Framework: LangGraph
+Task: Translate text to target language
+
+Example:
+    Input: "Bonjour tout le monde", target_language="English"   
+    Output: "Hello everyone"
+"""
 import os
 import sys
 import yaml
@@ -25,12 +33,10 @@ class TranslationState(TypedDict):
 
 class LangGraphTranslator:
     def __init__(self):
-        # Load central YAML config
         config_path = os.getenv("CONFIG_PATH", "/app/agents_config.yaml")
         with open(config_path) as f:
             config = yaml.safe_load(f)
         
-        # Get this agent's config
         agent_name = os.getenv("AGENT_NAME", "langgraph-translator")
         agent_config = config["agents"][agent_name]
         
@@ -40,12 +46,10 @@ class LangGraphTranslator:
         self.port = agent_config["port"]
         self.endpoint = agent_config["endpoint"]
         
-        # Get API key from env
         api_key = os.getenv(agent_config["api_key_env"])
         if not api_key:
             raise ValueError(f"API key not found: {agent_config['api_key_env']}")
         
-        # Create LangChain LLM
         self.llm = self._create_llm(api_key)
         self.graph = self._build_graph()
         

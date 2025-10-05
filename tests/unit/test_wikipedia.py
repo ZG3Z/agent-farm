@@ -1,5 +1,5 @@
 """
-Unit tests for ADK Wikipedia agent
+Unit tests for Wikipedia Agent
 """
 import sys
 import time

@@ -1,17 +1,9 @@
 import os
 from typing import Any
 
-
 def create_client(provider: str, api_key: str) -> Any:
     """
-    Create native SDK client for given provider.
-    
-    Args:
-        provider: "openai" | "anthropic" | "gemini"
-        api_key: API key string
-    
-    Returns:
-        Native SDK client
+    Create native SDK client for given provider
     """
     if provider == "openai":
         import openai
