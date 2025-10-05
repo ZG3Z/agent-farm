@@ -1,7 +1,7 @@
 # Environment variables
 .env
 tests_local
-scripts
+scripts_local
 
 # Python
 __pycache__/
