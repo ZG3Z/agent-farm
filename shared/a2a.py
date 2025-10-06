@@ -160,7 +160,7 @@ class A2AServer:
 class A2AClient:
     """Client for communicating with other agents via A2A protocol"""
 
-    def __init__(self, agent_id: str, timeout: int = 30):
+    def __init__(self, agent_id: str, timeout: int = 120):
         self.agent_id = agent_id
         self.timeout = timeout
         self._agent_cache: Dict[str, AgentInfo] = {}
