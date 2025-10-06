@@ -55,10 +55,10 @@ jobs:
         EOF
     
     - name: Build containers
-      run: docker-compose build
+      run: docker compose build
     
     - name: Start services
-      run: docker-compose up -d
+      run: docker compose up -d
     
     - name: Wait for services
       run: |
@@ -76,7 +76,7 @@ jobs:
             fi
             if [ $i -eq 10 ]; then
               echo "Port $PORT failed to start"
-              docker-compose logs
+              docker compose logs
               exit 1
             fi
             sleep 5
@@ -96,7 +96,7 @@ jobs:
     
     - name: Stop services
       if: always()
-      run: docker-compose down -v
+      run: docker compose down -v
     
     - name: Test summary
       if: always()
