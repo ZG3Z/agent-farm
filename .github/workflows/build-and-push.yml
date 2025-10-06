@@ -6,7 +6,7 @@ on:
 env:
   REGISTRY_LOCATION: europe-west1
   REGISTRY_NAME: agents
-  ENVIRONMENT: prod
+  ENVIRONMENT: prd
 
 jobs:
   validation:
@@ -89,7 +89,7 @@ jobs:
       run: pip install pytest requests pyyaml uvicorn fastapi pytest-timeout
     
     - name: Run unit tests
-      run: pytest tests/unit/ -v --tb=short --maxfail=3
+      run: pytest tests/unit/ -v --tb=short --maxfail=3 --timeout=120
     
     - name: Run integration tests
       run: pytest tests/integration/ -v --tb=short --maxfail=3 --timeout=180
