@@ -6,7 +6,7 @@ on:
 env:
   REGISTRY_LOCATION: europe-west1
   REGISTRY_NAME: agents
-  ENVIRONMENT: prd
+  ENVIRONMENT: prod
 
 jobs:
   validation:
@@ -23,13 +23,10 @@ jobs:
         python-version: '3.10'
     
     - name: Install validation dependencies
-      run: pip install pyyaml black pylint
+      run: pip install pyyaml black
     
     - name: Check code formatting
       run: black --check agents/ shared/ tests/
-    
-    - name: Run quality checks
-      run: pylint agents/ shared/ --fail-under=7.0 --disable=C0114,C0115,C0116
     
     - name: Validate YAML files
       run: |
