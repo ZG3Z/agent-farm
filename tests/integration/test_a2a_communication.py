@@ -117,6 +117,7 @@ class TestExtractorToWikipedia:
             )
             assert wiki_result["status"] == "success"
 
+
 class TestComplexPipeline:
     """Complex multi-agent pipelines"""
 
