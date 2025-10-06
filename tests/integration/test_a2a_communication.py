@@ -1,7 +1,3 @@
-"""
-Integration tests for A2A communication between agents
-"""
-
 import sys
 import time
 import requests
