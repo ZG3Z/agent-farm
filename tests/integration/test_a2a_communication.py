@@ -136,7 +136,7 @@ class TestWeatherToTranslator:
         assert weather_result["status"] == "success"
         weather_info = weather_result["weather_info"]
 
-        time.sleep(2)
+        time.sleep(10)
 
         trans_result = client.send_request(
             to_agent="langgraph-translator",
