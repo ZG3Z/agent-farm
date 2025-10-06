@@ -1,6 +1,6 @@
 """
 Data Extractor Agent
-Framework: None 
+Framework: None
 Task: Extract structured data from text
 
 Example:
@@ -13,13 +13,14 @@ Example:
     "key_facts": ["John Smith visited Paris on January 15, 2024 and spent $500."]
   }
 """
+
 import os
 import sys
 import yaml
 import json
 import logging
 
-sys.path.insert(0, '/app/shared')
+sys.path.insert(0, "/app/shared")
 
 from llm_config import create_client
 from a2a import A2AServer, A2AMessage, AgentInfo, AgentCapability
@@ -33,24 +34,24 @@ class DataExtractor:
         config_path = os.getenv("CONFIG_PATH", "/app/agents_config.yaml")
         with open(config_path) as f:
             config = yaml.safe_load(f)
-        
+
         agent_name = os.getenv("AGENT_NAME", "simple-extractor")
         agent_config = config["agents"][agent_name]
-        
+
         self.provider = agent_config["provider"]
         self.model_name = agent_config["model"]
         self.temperature = agent_config["temperature"]
         self.port = agent_config["port"]
         self.endpoint = agent_config["endpoint"]
-        
+
         api_key = os.getenv(agent_config["api_key_env"])
         if not api_key:
             raise ValueError(f"API key not found: {agent_config['api_key_env']}")
-        
+
         self.client = create_client(self.provider, api_key)
-        
+
         logger.info(f"Data Extractor: {self.provider}/{self.model_name}")
-    
+
     def extract(self, text):
         system = """Extract structured information. Return ONLY valid JSON:
                     {
@@ -60,17 +61,17 @@ class DataExtractor:
                     "amounts": ["money/numbers"],
                     "key_facts": ["facts"]
                     }"""
-        
+
         try:
             if self.provider == "openai":
                 response = self.client.chat.completions.create(
                     model=self.model_name,
                     messages=[
                         {"role": "system", "content": system},
-                        {"role": "user", "content": f"Extract from:\n\n{text}"}
+                        {"role": "user", "content": f"Extract from:\n\n{text}"},
                     ],
                     temperature=self.temperature,
-                    response_format={"type": "json_object"}
+                    response_format={"type": "json_object"},
                 )
                 result = json.loads(response.choices[0].message.content)
             elif self.provider == "anthropic":
@@ -79,30 +80,42 @@ class DataExtractor:
                     system=system,
                     messages=[{"role": "user", "content": f"Extract from:\n\n{text}"}],
                     temperature=self.temperature,
-                    max_tokens=500
+                    max_tokens=500,
                 )
                 content = response.content[0].text
-                start = content.find('{')
-                end = content.rfind('}') + 1
+                start = content.find("{")
+                end = content.rfind("}") + 1
                 result = json.loads(content[start:end]) if start != -1 else {}
             elif self.provider == "gemini":
                 model = self.client.GenerativeModel(
-                    model_name=self.model_name,
-                    system_instruction=system
+                    model_name=self.model_name, system_instruction=system
                 )
                 response = model.generate_content(f"Extract from:\n\n{text}")
                 content = response.text
-                start = content.find('{')
-                end = content.rfind('}') + 1
+                start = content.find("{")
+                end = content.rfind("}") + 1
                 result = json.loads(content[start:end]) if start != -1 else {}
-            
-            default = {"people": [], "locations": [], "dates": [], "amounts": [], "key_facts": []}
+
+            default = {
+                "people": [],
+                "locations": [],
+                "dates": [],
+                "amounts": [],
+                "key_facts": [],
+            }
             default.update(result)
             return default
         except Exception as e:
             logger.error(f"Extraction error: {e}")
-            return {"people": [], "locations": [], "dates": [], "amounts": [], "key_facts": [], "error": str(e)}
-    
+            return {
+                "people": [],
+                "locations": [],
+                "dates": [],
+                "amounts": [],
+                "key_facts": [],
+                "error": str(e),
+            }
+
     def handle_a2a_message(self, message):
         payload = message.payload
         if payload.get("action") == "extract":
@@ -115,7 +128,7 @@ class DataExtractor:
                 "extracted_data": extracted_data,
                 "framework": "none",
                 "provider": self.provider,
-                "model": self.model_name
+                "model": self.model_name,
             }
         return {"status": "error", "message": "Unknown action"}
 
@@ -137,15 +150,16 @@ def main():
                     "locations": "array",
                     "dates": "array",
                     "amounts": "array",
-                    "key_facts": "array"
-                }
+                    "key_facts": "array",
+                },
             )
         ],
         framework="none",
-        model_provider=agent.provider
+        model_provider=agent.provider,
     )
     server = A2AServer(agent_info, agent.handle_a2a_message, agent.port)
     server.run()
+
 
 if __name__ == "__main__":
     main()

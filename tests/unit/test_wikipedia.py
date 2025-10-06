@@ -1,12 +1,13 @@
 """
 Unit tests for Wikipedia Agent
 """
+
 import sys
 import time
 import requests
 import pytest
 
-sys.path.insert(0, 'shared')
+sys.path.insert(0, "shared")
 from a2a import A2AClient
 
 ENDPOINT = "http://localhost:8082"
@@ -28,7 +29,7 @@ def wait_for_agent(max_retries=30, retry_delay=2):
 
 class TestWikipediaHealth:
     """Health check tests"""
-    
+
     def test_agent_is_running(self):
         """Test: Agent responds to health check"""
         assert wait_for_agent(), "Agent failed to start"
@@ -37,7 +38,7 @@ class TestWikipediaHealth:
         data = response.json()
         assert data["status"] == "healthy"
         assert data["agent"] == AGENT_ID
-    
+
     def test_agent_info_endpoint(self):
         """Test: Agent info endpoint returns correct data"""
         response = requests.get(f"{ENDPOINT}/info")
@@ -50,93 +51,75 @@ class TestWikipediaHealth:
 
 class TestWikipediaCapabilities:
     """Capability tests"""
-    
+
     @pytest.fixture
     def client(self):
         """Create A2A client"""
         return A2AClient(agent_id="test_client")
-    
+
     def test_search_valid_topic(self, client):
         """Test: Search for valid Wikipedia topic"""
         result = client.send_request(
             to_agent=AGENT_ID,
             endpoint=ENDPOINT,
-            payload={
-                "action": "search",
-                "topic": "Python programming language"
-            }
+            payload={"action": "search", "topic": "Python programming language"},
         )
         assert result["status"] == "success"
         assert "summary" in result
         assert result["topic"] == "Python programming language"
         assert len(result["summary"]) > 0
-    
+
     def test_search_different_topic(self, client):
         """Test: Search for different topic"""
         result = client.send_request(
             to_agent=AGENT_ID,
             endpoint=ENDPOINT,
-            payload={
-                "action": "search",
-                "topic": "Machine Learning"
-            }
+            payload={"action": "search", "topic": "Machine Learning"},
         )
         assert result["status"] == "success"
         assert "summary" in result
         assert "source" in result
-    
+
     def test_search_person(self, client):
         """Test: Search for person"""
         result = client.send_request(
             to_agent=AGENT_ID,
             endpoint=ENDPOINT,
-            payload={
-                "action": "search",
-                "topic": "Albert Einstein"
-            }
+            payload={"action": "search", "topic": "Albert Einstein"},
         )
         assert result["status"] == "success"
         assert "summary" in result
-    
+
     def test_search_empty_topic(self, client):
         """Test: Error on empty topic"""
         result = client.send_request(
             to_agent=AGENT_ID,
             endpoint=ENDPOINT,
-            payload={
-                "action": "search",
-                "topic": ""
-            }
+            payload={"action": "search", "topic": ""},
         )
         assert result["status"] == "error"
         assert "message" in result
-    
+
     def test_unknown_action(self, client):
         """Test: Error on unknown action"""
         result = client.send_request(
             to_agent=AGENT_ID,
             endpoint=ENDPOINT,
-            payload={
-                "action": "unknown_action",
-                "topic": "test"
-            }
+            payload={"action": "unknown_action", "topic": "test"},
         )
         assert result["status"] == "error"
 
 
 class TestWikipediaMetadata:
     """Metadata tests"""
-    
+
     def test_response_contains_framework_info(self):
         """Test: Response includes framework metadata"""
         client = A2AClient(agent_id="test_client")
         result = client.send_request(
             to_agent=AGENT_ID,
             endpoint=ENDPOINT,
-            payload={
-                "action": "search",
-                "topic": "Artificial Intelligence"
-            }
+            payload={"action": "search", "topic": "Artificial Intelligence"},
         )
         assert "framework" in result
         assert result["framework"] == "adk"

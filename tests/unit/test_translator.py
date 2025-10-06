@@ -1,12 +1,13 @@
 """
 Unit tests for Translator Agent
 """
+
 import sys
 import time
 import requests
 import pytest
 
-sys.path.insert(0, 'shared')
+sys.path.insert(0, "shared")
 from a2a import A2AClient
 
 ENDPOINT = "http://localhost:8080"
@@ -65,8 +66,8 @@ class TestTranslatorCapabilities:
             payload={
                 "action": "translate",
                 "text": "Hello world",
-                "target_language": "Polish"
-            }
+                "target_language": "Polish",
+            },
         )
         assert result["status"] == "success"
         assert "translated_text" in result
@@ -82,8 +83,8 @@ class TestTranslatorCapabilities:
             payload={
                 "action": "translate",
                 "text": "Good morning",
-                "target_language": "Spanish"
-            }
+                "target_language": "Spanish",
+            },
         )
         assert result["status"] == "success"
         assert "translated_text" in result
@@ -94,11 +95,7 @@ class TestTranslatorCapabilities:
         result = client.send_request(
             to_agent=AGENT_ID,
             endpoint=ENDPOINT,
-            payload={
-                "action": "translate",
-                "text": "",
-                "target_language": "Polish"
-            }
+            payload={"action": "translate", "text": "", "target_language": "Polish"},
         )
         assert result["status"] == "error"
         assert "message" in result
@@ -108,10 +105,7 @@ class TestTranslatorCapabilities:
         result = client.send_request(
             to_agent=AGENT_ID,
             endpoint=ENDPOINT,
-            payload={
-                "action": "unknown_action",
-                "text": "test"
-            }
+            payload={"action": "unknown_action", "text": "test"},
         )
         assert result["status"] == "error"
         assert "Unknown action" in result["message"]
@@ -125,8 +119,8 @@ class TestTranslatorCapabilities:
             payload={
                 "action": "translate",
                 "text": long_text,
-                "target_language": "French"
-            }
+                "target_language": "French",
+            },
         )
         assert result["status"] == "success"
         assert len(result["translated_text"]) > 0
@@ -144,8 +138,8 @@ class TestTranslatorMetadata:
             payload={
                 "action": "translate",
                 "text": "test",
-                "target_language": "German"
-            }
+                "target_language": "German",
+            },
         )
         assert "framework" in result
         assert result["framework"] == "langgraph"

@@ -1,5 +1,5 @@
 """
-Weather Agent 
+Weather Agent
 Framework: CrewAI
 Task: Get real weather for a location
 
@@ -17,13 +17,14 @@ Example:
     }
   }
 """
+
 import os
 import sys
 import yaml
 import logging
 import requests
 
-sys.path.insert(0, '/app/shared')
+sys.path.insert(0, "/app/shared")
 
 from crewai import Agent, Task, Crew
 from crewai.llm import LLM
@@ -37,30 +38,26 @@ def get_real_weather(location: str, api_key: str) -> dict:
     """Get weather from OpenWeatherMap API"""
     try:
         url = "http://api.openweathermap.org/data/2.5/weather"
-        params = {
-            "q": location,
-            "appid": api_key,
-            "units": "metric"
-        }
-        
+        params = {"q": location, "appid": api_key, "units": "metric"}
+
         response = requests.get(url, params=params, timeout=10)
         response.raise_for_status()
         data = response.json()
-        
+
         temp = data["main"]["temp"]
         feels_like = data["main"]["feels_like"]
         description = data["weather"][0]["description"]
         humidity = data["main"]["humidity"]
         wind_speed = data["wind"]["speed"]
         pressure = data["main"]["pressure"]
-        
+
         weather_text = (
             f"Current weather in {location}: {description.capitalize()}. "
             f"Temperature: {temp}°C (feels like {feels_like}°C). "
             f"Humidity: {humidity}%. Wind speed: {wind_speed} m/s. "
             f"Pressure: {pressure} hPa."
         )
-        
+
         return {
             "success": True,
             "data": weather_text,
@@ -70,10 +67,10 @@ def get_real_weather(location: str, api_key: str) -> dict:
                 "description": description,
                 "humidity": humidity,
                 "wind_speed": wind_speed,
-                "pressure": pressure
-            }
+                "pressure": pressure,
+            },
         }
-        
+
     except requests.exceptions.HTTPError as e:
         if e.response.status_code == 404:
             return {"success": False, "error": f"Location '{location}' not found"}
@@ -92,97 +89,91 @@ class CrewAIWeather:
         config_path = os.getenv("CONFIG_PATH", "/app/agents_config.yaml")
         with open(config_path) as f:
             config = yaml.safe_load(f)
-        
+
         agent_name = os.getenv("AGENT_NAME", "crewai-weather")
         agent_config = config["agents"][agent_name]
-        
+
         self.provider = agent_config["provider"]
         self.model_name = agent_config["model"]
         self.temperature = agent_config["temperature"]
         self.port = agent_config["port"]
         self.endpoint = agent_config["endpoint"]
-        
+
         llm_api_key = os.getenv(agent_config["api_key_env"])
         if not llm_api_key:
             raise ValueError(f"LLM API key not found: {agent_config['api_key_env']}")
-        
+
         self.weather_api_key = os.getenv("OPENWEATHER_API_KEY")
         if not self.weather_api_key:
             raise ValueError(
                 "OPENWEATHER_API_KEY is required. "
                 "Get a free API key at https://openweathermap.org/api"
             )
-        
+
         self.llm = LLM(
             model=f"{self.provider}/{self.model_name}",
             api_key=llm_api_key,
-            temperature=self.temperature
+            temperature=self.temperature,
         )
-        
+
         logger.info(f"CrewAI Weather: {self.provider}/{self.model_name}")
         logger.info("OpenWeatherMap API: configured")
-    
+
     def get_weather(self, location):
         """Get weather for location from OpenWeatherMap API"""
-        
+
         # Get weather data
         weather_result = get_real_weather(location, self.weather_api_key)
-        
+
         if not weather_result["success"]:
-            return {
-                "error": weather_result["error"],
-                "location": location
-            }
-        
+            return {"error": weather_result["error"], "location": location}
+
         weather_data = weather_result["data"]
-        
+
         weather_agent = Agent(
             role="Weather Communicator",
             goal="Present weather information in a clear, conversational manner",
             backstory="You are a friendly weather reporter who presents weather data clearly.",
             llm=self.llm,
             verbose=False,
-            allow_delegation=False
+            allow_delegation=False,
         )
-        
+
         weather_task = Task(
             description=f"""Present this weather data in a friendly, conversational format (2-3 sentences):
                             {weather_data}
                             Keep all the specific numbers and details, but make it sound natural and easy to understand.""",
             expected_output="Friendly weather description with all details",
-            agent=weather_agent
+            agent=weather_agent,
         )
-        
+
         crew = Crew(agents=[weather_agent], tasks=[weather_task], verbose=False)
         result = crew.kickoff()
-        
-        if hasattr(result, 'raw'):
+
+        if hasattr(result, "raw"):
             friendly_text = str(result.raw).strip()
         else:
             friendly_text = str(result).strip()
-        
-        return {
-            "text": friendly_text,
-            "raw_data": weather_result["raw_data"]
-        }
-    
+
+        return {"text": friendly_text, "raw_data": weather_result["raw_data"]}
+
     def handle_a2a_message(self, message):
         payload = message.payload
         if payload.get("action") == "get_weather":
             location = payload.get("location", "")
             if not location:
                 return {"status": "error", "message": "No location provided"}
-            
+
             try:
                 weather_result = self.get_weather(location)
-                
+
                 if "error" in weather_result:
                     return {
                         "status": "error",
                         "message": weather_result["error"],
-                        "location": location
+                        "location": location,
                     }
-                
+
                 return {
                     "status": "success",
                     "weather_info": weather_result["text"],
@@ -195,15 +186,15 @@ class CrewAIWeather:
                     "framework": "crewai",
                     "provider": self.provider,
                     "model": self.model_name,
-                    "data_source": "openweathermap"
+                    "data_source": "openweathermap",
                 }
             except Exception as e:
                 logger.error(f"Weather error: {e}", exc_info=True)
                 return {
                     "status": "error",
-                    "message": f"Failed to get weather: {str(e)}"
+                    "message": f"Failed to get weather: {str(e)}",
                 }
-        
+
         return {"status": "error", "message": "Unknown action"}
 
 
@@ -223,12 +214,12 @@ def main():
                     "weather_info": "string",
                     "temperature": "number",
                     "humidity": "number",
-                    "data_source": "string"
-                }
+                    "data_source": "string",
+                },
             )
         ],
         framework="crewai",
-        model_provider=agent.provider
+        model_provider=agent.provider,
     )
     server = A2AServer(agent_info, agent.handle_a2a_message, agent.port)
     server.run()
