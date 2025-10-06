@@ -6,7 +6,7 @@ on:
 env:
   REGISTRY_LOCATION: europe-west1
   REGISTRY_NAME: agents
-  ENVIRONMENT: prod
+  ENVIRONMENT: prd
 
 jobs:
   validation:
