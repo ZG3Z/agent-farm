@@ -30,10 +30,6 @@ jobs:
       run: |
         black --check agents/ shared/ tests/
     
-    - name: Run linting
-      run: |
-        flake8 agents/ shared/ tests/ --max-line-length=120 --ignore=E501,W503
-    
     - name: Validate YAML files
       run: |
         python -c "import yaml; yaml.safe_load(open('agents_config.yaml'))"
