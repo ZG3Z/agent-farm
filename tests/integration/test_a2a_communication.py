@@ -118,6 +118,38 @@ class TestExtractorToWikipedia:
             assert wiki_result["status"] == "success"
 
 
+class TestWeatherToTranslator:
+    """Pipeline: Weather -> Translator"""
+
+    @pytest.fixture
+    def client(self):
+        """Create A2A client"""
+        return A2AClient(agent_id="integration_test", timeout=60)
+
+    def test_weather_then_translate(self, client):
+        """Test: Get weather then translate to another language"""
+        weather_result = client.send_request(
+            to_agent="crewai-weather",
+            endpoint=ENDPOINTS["weather"],
+            payload={"action": "get_weather", "location": "Tokyo"},
+        )
+        assert weather_result["status"] == "success"
+        weather_info = weather_result["weather_info"]
+
+        time.sleep(10)
+
+        trans_result = client.send_request(
+            to_agent="langgraph-translator",
+            endpoint=ENDPOINTS["translator"],
+            payload={
+                "action": "translate",
+                "text": weather_info,
+                "target_language": "Spanish",
+            },
+        )
+        assert trans_result["status"] == "success"
+
+
 class TestComplexPipeline:
     """Complex multi-agent pipelines"""
 
