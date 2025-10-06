@@ -86,7 +86,7 @@ jobs:
         echo "All agents ready"
     
     - name: Install test dependencies
-      run: pip install pytest requests pyyaml
+      run: pip install pytest requests pyyaml uvicorn fastapi
     
     - name: Run unit tests
       run: pytest tests/unit/ -v --tb=short --maxfail=3
