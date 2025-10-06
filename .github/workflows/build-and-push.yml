@@ -6,7 +6,7 @@ on:
 env:
   REGISTRY_LOCATION: europe-west1
   REGISTRY_NAME: agents
-  ENVIRONMENT: prd
+  ENVIRONMENT: prod
 
 jobs:
   validation:
@@ -86,13 +86,13 @@ jobs:
         echo "All agents ready"
     
     - name: Install test dependencies
-      run: pip install pytest requests pyyaml uvicorn fastapi
+      run: pip install pytest requests pyyaml uvicorn fastapi pytest-timeout
     
     - name: Run unit tests
       run: pytest tests/unit/ -v --tb=short --maxfail=3
     
     - name: Run integration tests
-      run: pytest tests/integration/ -v --tb=short --maxfail=3
+      run: pytest tests/integration/ -v --tb=short --maxfail=3 --timeout=180
     
     - name: Stop services
       if: always()
