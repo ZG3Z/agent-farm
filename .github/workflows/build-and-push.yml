@@ -71,6 +71,9 @@ jobs:
         echo "WIF_SERVICE_ACCOUNT exists: ${{ secrets.WIF_SERVICE_ACCOUNT != '' }}"
         echo "GCP_PROJECT_ID exists: ${{ secrets.GCP_PROJECT_ID != '' }}"
     
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+    
     - name: Authenticate to Google Cloud
       uses: google-github-actions/auth@v1
       with:
@@ -85,9 +88,6 @@ jobs:
         gcloud config get-value account
         echo "Current project:"
         gcloud config get-value project
-    
-    - name: Set up Cloud SDK
-      uses: google-github-actions/setup-gcloud@v1
     
     - name: Configure Docker
       run: gcloud auth configure-docker ${{ env.REGISTRY_LOCATION }}-docker.pkg.dev
