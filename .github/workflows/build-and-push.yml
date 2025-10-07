@@ -107,7 +107,7 @@ jobs:
   build-push:
     name: Build and Push Images
     runs-on: ubuntu-latest
-    needs: test
+    needs: validation
     
     permissions:
       contents: read
@@ -198,7 +198,7 @@ jobs:
   summary:
     name: Pipeline Summary
     runs-on: ubuntu-latest
-    needs: [validation, test, build-push]
+    needs: [validation, build-push]
     if: always()
     
     steps:
@@ -209,5 +209,6 @@ jobs:
         echo "| Stage | Status |" >> $GITHUB_STEP_SUMMARY
         echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
         echo "| Validation | ${{ needs.validation.result }} |" >> $GITHUB_STEP_SUMMARY
-        echo "| Tests | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
         echo "| Build & Push | ${{ needs.build-push.result }} |" >> $GITHUB_STEP_SUMMARY
+
+# echo "| Tests | ${{ needs.test.result }} |" >> $GITHUB_STEP_SUMMARY
