@@ -32,14 +32,27 @@ class TranslationState(TypedDict):
     translated_text: str
 
 
+def load_agent_config():
+    agent_name = os.getenv("AGENT_NAME", "langgraph-translator")
+
+    if os.path.exists("/app/agents_config.yaml"):
+        with open("/app/agents_config.yaml") as f:
+            config = yaml.safe_load(f)
+            return config["agents"][agent_name]
+
+    return {
+        "provider": os.getenv("PROVIDER"),
+        "model": os.getenv("MODEL"),
+        "temperature": float(os.getenv("TEMPERATURE")),
+        "port": int(os.getenv("PORT", "8080")),
+        "endpoint": os.getenv("ENDPOINT"),
+        "api_key_env": os.getenv("API_KEY_ENV"),
+    }
+
+
 class LangGraphTranslator:
     def __init__(self):
-        config_path = os.getenv("CONFIG_PATH", "/app/agents_config.yaml")
-        with open(config_path) as f:
-            config = yaml.safe_load(f)
-
-        agent_name = os.getenv("AGENT_NAME", "langgraph-translator")
-        agent_config = config["agents"][agent_name]
+        agent_config = load_agent_config()
 
         self.provider = agent_config["provider"]
         self.model_name = agent_config["model"]
@@ -48,8 +61,6 @@ class LangGraphTranslator:
         self.endpoint = agent_config["endpoint"]
 
         api_key = os.getenv(agent_config["api_key_env"])
-        if not api_key:
-            raise ValueError(f"API key not found: {agent_config['api_key_env']}")
 
         self.llm = self._create_llm(api_key)
         self.graph = self._build_graph()

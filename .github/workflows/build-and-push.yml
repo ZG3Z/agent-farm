@@ -65,6 +65,43 @@ jobs:
         echo "matrix=$matrix_json" >> $GITHUB_OUTPUT
         echo "Discovered agents: $matrix_json"
     
+    - name: Detect changed agents
+      id: changes
+      run: |
+        # Jeśli to pierwszy build, zbuduj wszystkich
+        if ! git rev-parse HEAD~1 >/dev/null 2>&1; then
+          echo "First build - building all agents"
+          echo "changed_agents=$(echo '${{ steps.discover.outputs.matrix }}' | jq -c '.agent')" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        
+        # Sprawdź które foldery się zmieniły od ostatniego commita
+        CHANGED_DIRS=$(git diff --name-only HEAD~1 HEAD | grep '^agents/' | cut -d'/' -f2 | sort -u)
+        
+        # Sprawdź czy zmieniły się shared/ lub agents_config.yaml (wtedy buduj wszystkich)
+        if git diff --name-only HEAD~1 HEAD | grep -E '^(shared/|agents_config.yaml)'; then
+          echo "Shared files changed - building all agents"
+          echo "changed_agents=$(echo '${{ steps.discover.outputs.matrix }}' | jq -c '.agent')" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+        
+        # Lista zmienionych agentów
+        changed_agents=()
+        for dir in $CHANGED_DIRS; do
+          if [ -d "agents/$dir" ] && [ -f "agents/$dir/Dockerfile" ]; then
+            changed_agents+=("\"$dir\"")
+          fi
+        done
+        
+        if [ ${#changed_agents[@]} -eq 0 ]; then
+          echo "No agents changed - nothing to build"
+          echo "changed_agents=[]" >> $GITHUB_OUTPUT
+        else
+          agents_json=$(IFS=,; echo "${changed_agents[*]}")
+          echo "changed_agents=[$agents_json]" >> $GITHUB_OUTPUT
+          echo "Changed agents: [$agents_json]"
+        fi
+    
     - name: Debug secrets
       run: |
         echo "WIF_PROVIDER exists: ${{ secrets.WIF_PROVIDER != '' }}"
@@ -107,7 +144,12 @@ jobs:
     
     - name: Build and push all agents
       run: |
-        AGENTS=$(echo '${{ steps.discover.outputs.matrix }}' | jq -r '.agent[]')
+        AGENTS=$(echo '${{ steps.changes.outputs.changed_agents }}' | jq -r '.[]')
+        
+        if [ -z "$AGENTS" ]; then
+          echo "No agents to build - skipping"
+          exit 0
+        fi
         
         for AGENT in $AGENTS; do
           echo "Building $AGENT..."
@@ -133,16 +175,23 @@ jobs:
     
     - name: Build summary
       run: |
+        AGENTS=$(echo '${{ steps.changes.outputs.changed_agents }}' | jq -r '.[]')
+        
         echo "### Build Complete" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo "Environment: ${{ env.ENVIRONMENT }}" >> $GITHUB_STEP_SUMMARY
         echo "SHA: ${{ steps.tags.outputs.short_sha }}" >> $GITHUB_STEP_SUMMARY
         echo "Timestamp: ${{ steps.tags.outputs.timestamp }}" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
-        echo "#### Built agents:" >> $GITHUB_STEP_SUMMARY
-        echo '${{ steps.discover.outputs.matrix }}' | jq -r '.agent[]' | while read agent; do
-          echo "- $agent" >> $GITHUB_STEP_SUMMARY
-        done
+        
+        if [ -z "$AGENTS" ]; then
+          echo "**No agents changed - nothing built**" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "#### Built agents:" >> $GITHUB_STEP_SUMMARY
+          echo '${{ steps.changes.outputs.changed_agents }}' | jq -r '.[]' | while read agent; do
+            echo "- $agent" >> $GITHUB_STEP_SUMMARY
+          done
+        fi
 
   summary:
     name: Pipeline Summary
