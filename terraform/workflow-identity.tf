@@ -52,3 +52,13 @@ resource "google_service_account_iam_member" "github_wif_binding" {
   role               = "roles/iam.workloadIdentityUser"
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_pool.name}/attribute.repository/${var.github_repository}"
 }
+
+output "workload_identity_provider" {
+  description = "Workload Identity Provider for GitHub Actions (add to WIF_PROVIDER secret)"
+  value       = google_iam_workload_identity_pool_provider.github_provider.name
+}
+
+output "github_service_account_email" {
+  description = "Service account email for GitHub Actions (add to WIF_SERVICE_ACCOUNT secret)"
+  value       = google_service_account.github_actions_sa.email
+}
