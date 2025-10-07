@@ -79,6 +79,8 @@ jobs:
       with:
         workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
         service_account: ${{ secrets.WIF_SERVICE_ACCOUNT }}
+        create_credentials_file: true
+        export_environment_variables: true
     
     - name: Verify authentication
       run: |
