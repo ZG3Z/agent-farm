@@ -55,7 +55,7 @@ resource "google_service_account_iam_member" "github_wif_binding" {
 
 output "workload_identity_provider" {
   description = "Workload Identity Provider for GitHub Actions (add to WIF_PROVIDER secret)"
-  value       = google_iam_workload_identity_pool_provider.github_provider.name
+  value       = "projects/${var.project_id}/locations/global/workloadIdentityPools/${google_iam_workload_identity_pool.github_pool.workload_identity_pool_id}/providers/${google_iam_workload_identity_pool_provider.github_provider.workload_identity_pool_provider_id}"
 }
 
 output "github_service_account_email" {
