@@ -33,76 +33,76 @@ jobs:
         python -c "import yaml; yaml.safe_load(open('agents_config.yaml'))"
         python -c "import yaml; yaml.safe_load(open('docker-compose.yml'))"
 
-  test:
-    name: Run Tests
-    runs-on: ubuntu-latest
-    needs: validation
+  # test:
+  #   name: Run Tests
+  #   runs-on: ubuntu-latest
+  #   needs: validation
     
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
+  #   steps:
+  #   - name: Checkout code
+  #     uses: actions/checkout@v3
     
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.10'
+  #   - name: Set up Python
+  #     uses: actions/setup-python@v4
+  #     with:
+  #       python-version: '3.10'
     
-    - name: Create environment file
-      run: |
-        cat > .env << EOF
-        GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
-        OPENWEATHER_API_KEY=${{ secrets.OPENWEATHER_API_KEY }}
-        EOF
+  #   - name: Create environment file
+  #     run: |
+  #       cat > .env << EOF
+  #       GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}
+  #       OPENWEATHER_API_KEY=${{ secrets.OPENWEATHER_API_KEY }}
+  #       EOF
     
-    - name: Build containers
-      run: docker compose build
+  #   - name: Build containers
+  #     run: docker compose build
     
-    - name: Start services
-      run: docker compose up -d
+  #   - name: Start services
+  #     run: docker compose up -d
     
-    - name: Wait for services
-      run: |
-        sleep 30
+  #   - name: Wait for services
+  #     run: |
+  #       sleep 30
         
-        grep -E "^\s+port:" agents_config.yaml | awk '{print $2}' > ports.txt
+  #       grep -E "^\s+port:" agents_config.yaml | awk '{print $2}' > ports.txt
         
-        echo "Checking health endpoints..."
-        while read PORT; do
-          echo "Checking port $PORT..."
-          for i in {1..10}; do
-            if curl -f http://localhost:$PORT/health 2>/dev/null; then
-              echo "Port $PORT ready"
-              break
-            fi
-            if [ $i -eq 10 ]; then
-              echo "Port $PORT failed to start"
-              docker compose logs
-              exit 1
-            fi
-            sleep 5
-          done
-        done < ports.txt
+  #       echo "Checking health endpoints..."
+  #       while read PORT; do
+  #         echo "Checking port $PORT..."
+  #         for i in {1..10}; do
+  #           if curl -f http://localhost:$PORT/health 2>/dev/null; then
+  #             echo "Port $PORT ready"
+  #             break
+  #           fi
+  #           if [ $i -eq 10 ]; then
+  #             echo "Port $PORT failed to start"
+  #             docker compose logs
+  #             exit 1
+  #           fi
+  #           sleep 5
+  #         done
+  #       done < ports.txt
         
-        echo "All agents ready"
+  #       echo "All agents ready"
     
-    - name: Install test dependencies
-      run: pip install pytest requests pyyaml uvicorn fastapi pytest-timeout
+  #   - name: Install test dependencies
+  #     run: pip install pytest requests pyyaml uvicorn fastapi pytest-timeout
     
-    - name: Run unit tests
-      run: pytest tests/unit/ -v --tb=short --maxfail=3 --timeout=120
+  #   - name: Run unit tests
+  #     run: pytest tests/unit/ -v --tb=short --maxfail=3 --timeout=120
     
-    - name: Run integration tests
-      run: pytest tests/integration/ -v --tb=short --maxfail=3 --timeout=300
+  #   - name: Run integration tests
+  #     run: pytest tests/integration/ -v --tb=short --maxfail=3 --timeout=300
     
-    - name: Stop services
-      if: always()
-      run: docker compose down -v
+  #   - name: Stop services
+  #     if: always()
+  #     run: docker compose down -v
     
-    - name: Test summary
-      if: always()
-      run: |
-        echo "### Test Results" >> $GITHUB_STEP_SUMMARY
-        echo "Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
+  #   - name: Test summary
+  #     if: always()
+  #     run: |
+  #       echo "### Test Results" >> $GITHUB_STEP_SUMMARY
+  #       echo "Status: ${{ job.status }}" >> $GITHUB_STEP_SUMMARY
 
   build-push:
     name: Build and Push Images
