@@ -35,9 +35,9 @@ resource "google_service_account" "github_actions_sa" {
   description  = "Service account for CI/CD pipeline"
 }
 
-resource "google_project_iam_member" "github_sa_artifact_writer" {
+resource "google_project_iam_member" "github_sa_artifact_admin" {
   project = var.project_id
-  role    = "roles/artifactregistry.writer"
+  role    = "roles/artifactregistry.admin"
   member  = "serviceAccount:${google_service_account.github_actions_sa.email}"
 }
 
