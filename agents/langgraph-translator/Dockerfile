@@ -10,7 +10,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY agents/langgraph-translator/agent.py .
 
-# Set environment variables
 ENV AGENT_NAME=langgraph-translator
 ENV CONFIG_PATH=/app/agents_config.yaml
 ENV PYTHONUNBUFFERED=1

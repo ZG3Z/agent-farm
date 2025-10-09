@@ -9,6 +9,12 @@ variable "region" {
   default     = "europe-west1"
 }
 
+variable "environment" {
+  description = "Environment (dev, stg, prd)"
+  type        = string
+  default     = "prd"
+}
+
 variable "github_repository" {
   description = "GitHub repository in format: owner/repo"
   type        = string
