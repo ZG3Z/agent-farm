@@ -6,6 +6,7 @@ agents:
     temperature: 0.3
     port: 8080
     endpoint: http://localhost:8080
+    image_tag: 20251009-112337
     
   crewai-weather:
     provider: gemini
@@ -14,14 +15,16 @@ agents:
     temperature: 0.7
     port: 8081
     endpoint: http://localhost:8081
+    image_tag: 20251009-111218
     
   adk-wikipedia:
     provider: gemini
-    model: gemini-2.0-flash-lite
+    model: gemini-2.0-flash
     api_key_env: GOOGLE_API_KEY
     temperature: 0.5
     port: 8082
     endpoint: http://localhost:8082
+    image_tag: 20251009-111842
     
   simple-extractor:
     provider: gemini
@@ -30,6 +33,7 @@ agents:
     temperature: 0.3
     port: 8083
     endpoint: http://localhost:8083
+    image_tag: 20251009-111218
 
 
 

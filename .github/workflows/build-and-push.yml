@@ -8,8 +8,6 @@ on:
     paths:
       - 'agents/**'
       - 'shared/**'
-      - 'agents_config.yaml'
-      - '.github/workflows/build-and-push.yml'
 
 env:
   REGISTRY_LOCATION: europe-west1

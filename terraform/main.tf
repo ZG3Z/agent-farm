@@ -40,6 +40,7 @@ locals {
       model        = config.model
       api_key_env  = config.api_key_env
       temperature  = config.temperature
+      image_tag    = config.image_tag
     }
   }
   
@@ -50,7 +51,7 @@ locals {
   
   image_uris = {
     for agent_name in keys(local.agents) : agent_name => 
-      "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.agents.name}/${agent_name}:${var.environment}"
+      "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.agents.name}/${agent_name}:${local.agents[agent_name].image_tag}"
   }
 }
 

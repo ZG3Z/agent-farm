@@ -99,12 +99,6 @@ resource "google_cloud_run_v2_service" "agent" {
     type    = "TRAFFIC_TARGET_ALLOCATION_TYPE_LATEST"
     percent = 100
   }
-  
-  lifecycle {
-    ignore_changes = [
-      template[0].containers[0].image, 
-    ]
-  }
 }
 
 resource "google_cloud_run_v2_service_iam_member" "public_access" {
