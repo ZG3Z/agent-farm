@@ -20,7 +20,6 @@ Example:
 
 import os
 import sys
-import yaml
 import logging
 import requests
 
@@ -29,6 +28,7 @@ sys.path.insert(0, "/app/shared")
 from crewai import Agent, Task, Crew
 from crewai.llm import LLM
 from a2a import A2AServer, A2AMessage, AgentInfo, AgentCapability
+from config_loader import load_agent_config, get_api_key
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -86,12 +86,7 @@ def get_real_weather(location: str, api_key: str) -> dict:
 
 class CrewAIWeather:
     def __init__(self):
-        config_path = os.getenv("CONFIG_PATH", "/app/agents_config.yaml")
-        with open(config_path) as f:
-            config = yaml.safe_load(f)
-
-        agent_name = os.getenv("AGENT_NAME", "crewai-weather")
-        agent_config = config["agents"][agent_name]
+        agent_config = load_agent_config()
 
         self.provider = agent_config["provider"]
         self.model_name = agent_config["model"]
@@ -99,9 +94,7 @@ class CrewAIWeather:
         self.port = agent_config["port"]
         self.endpoint = agent_config["endpoint"]
 
-        llm_api_key = os.getenv(agent_config["api_key_env"])
-        if not llm_api_key:
-            raise ValueError(f"LLM API key not found: {agent_config['api_key_env']}")
+        llm_api_key = get_api_key(agent_config["api_key_env"])
 
         self.weather_api_key = os.getenv("OPENWEATHER_API_KEY")
         if not self.weather_api_key:
@@ -117,6 +110,7 @@ class CrewAIWeather:
         )
 
         logger.info(f"CrewAI Weather: {self.provider}/{self.model_name}")
+        logger.info(f"Endpoint: {self.endpoint}")
         logger.info("OpenWeatherMap API: configured")
 
     def get_weather(self, location):

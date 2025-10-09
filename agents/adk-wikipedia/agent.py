@@ -14,7 +14,6 @@ Example:
 
 import os
 import sys
-import yaml
 import logging
 import wikipedia
 
@@ -22,6 +21,7 @@ sys.path.insert(0, "/app/shared")
 
 from google.genai import Client
 from a2a import A2AServer, A2AMessage, AgentInfo, AgentCapability
+from config_loader import load_agent_config, get_api_key
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -58,12 +58,7 @@ class ADKWikipedia:
     """Simple Wikipedia agent using Google ADK"""
 
     def __init__(self):
-        config_path = os.getenv("CONFIG_PATH", "/app/agents_config.yaml")
-        with open(config_path) as f:
-            config = yaml.safe_load(f)
-
-        agent_name = os.getenv("AGENT_NAME", "adk-wikipedia")
-        agent_config = config["agents"][agent_name]
+        agent_config = load_agent_config()
 
         self.provider = agent_config["provider"]
         self.model_name = agent_config["model"]
@@ -71,13 +66,12 @@ class ADKWikipedia:
         self.port = agent_config["port"]
         self.endpoint = agent_config["endpoint"]
 
-        api_key = os.getenv(agent_config["api_key_env"])
-        if not api_key:
-            raise ValueError(f"API key not found: {agent_config['api_key_env']}")
+        api_key = get_api_key(agent_config["api_key_env"])
 
         self.client = Client(api_key=api_key)
 
         logger.info(f"ADK Wikipedia: {self.provider}/{self.model_name}")
+        logger.info(f"Endpoint: {self.endpoint}")
 
     def search(self, topic: str) -> dict:
         """Search Wikipedia and summarize"""

@@ -10,7 +10,6 @@ Example:
 
 import os
 import sys
-import yaml
 import logging
 from typing import Dict, Any, TypedDict
 
@@ -21,6 +20,7 @@ from langchain_openai import ChatOpenAI
 from langchain_anthropic import ChatAnthropic
 from langchain_google_genai import ChatGoogleGenerativeAI
 from a2a import A2AServer, A2AMessage, AgentInfo, AgentCapability
+from config_loader import load_agent_config, get_api_key
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -30,24 +30,6 @@ class TranslationState(TypedDict):
     text: str
     target_language: str
     translated_text: str
-
-
-def load_agent_config():
-    agent_name = os.getenv("AGENT_NAME", "langgraph-translator")
-
-    if os.path.exists("/app/agents_config.yaml"):
-        with open("/app/agents_config.yaml") as f:
-            config = yaml.safe_load(f)
-            return config["agents"][agent_name]
-
-    return {
-        "provider": os.getenv("PROVIDER"),
-        "model": os.getenv("MODEL"),
-        "temperature": float(os.getenv("TEMPERATURE")),
-        "port": int(os.getenv("PORT", "8080")),
-        "endpoint": os.getenv("ENDPOINT"),
-        "api_key_env": os.getenv("API_KEY_ENV"),
-    }
 
 
 class LangGraphTranslator:
@@ -60,12 +42,13 @@ class LangGraphTranslator:
         self.port = agent_config["port"]
         self.endpoint = agent_config["endpoint"]
 
-        api_key = os.getenv(agent_config["api_key_env"])
+        api_key = get_api_key(agent_config["api_key_env"])
 
         self.llm = self._create_llm(api_key)
         self.graph = self._build_graph()
 
         logger.info(f"LangGraph Translator: {self.provider}/{self.model_name}")
+        logger.info(f"Endpoint: {self.endpoint}")
 
     def _create_llm(self, api_key):
         if self.provider == "openai":
@@ -82,6 +65,8 @@ class LangGraphTranslator:
                 google_api_key=api_key,
                 temperature=self.temperature,
             )
+        else:
+            raise ValueError(f"Unsupported provider: {self.provider}")
 
     def _build_graph(self):
         workflow = StateGraph(TranslationState)
