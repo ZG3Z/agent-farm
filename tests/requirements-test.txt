@@ -3,3 +3,5 @@ pytest-asyncio
 pytest-timeout
 requests
 pyyaml
+fastapi
+uvicorn
